@@ -1,0 +1,161 @@
+# install and run helm
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+# add repo
+helm repo add stable https://charts.helm.sh/stable
+helm repo update
+
+Monitoring:
+helm install stable/prometheus-operator --generate-name
+
+#Grafana/Prometheus 
+operator ask kube to show monitoring. 
+ 
+#Edit config yaml file inline:
+kubectl edit service prometheus-operator-1673637767-grafana 
+
+#default Grafana access:
+admin
+prom-operator
+
+#k8s grafana ui import from official website
+https://grafana.com/grafana/dashboards/6417-kubernetes-cluster-prometheus/
+
+
+#EKSCTL install:
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+user4:~/environment $ eksctl info
+eksctl version: 0.125.0
+kubectl version: v1.26.0
+OS: linux
+
+// change permission, IAM role for EKS, 
+user4:~/environment $ aws sts get-caller-identity
+{
+    "UserId": "AROAQAYBJ4TEMXSNYSTOA:i-0dad6e99729cccef8",
+    "Account": "001613358280",
+    "Arn": "arn:aws:sts::001613358280:assumed-role/eksworkshop-admin/i-0dad6e99729cccef8"
+}
+
+user4:~/environment $ eksctl get cluster --region=us-east-1
+NAME                    REGION          EKSCTL CREATED
+eks-class-cluster       us-east-1       True
+user4:~/environment $
+ 
+user4:~/environment $ 
+user4:~/environment $ eksctl utils write-kubeconfig --cluster=eks-class-cluster --region=us-east-1
+2023-01-13 20:22:18 [ ]  saved kubeconfig as "/home/ubuntu/.kube/config"
+user4:~/environment $ kubectl get nodes
+NAME                             STATUS   ROLES    AGE   VERSION
+ip-192-168-20-50.ec2.internal    Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-51-6.ec2.internal     Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-90-164.ec2.internal   Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-94-241.ec2.internal   Ready    <none>   16h   v1.23.13-eks-fb459a0
+user4:~/environment $ 
+user4:~/environment $ 
+user4:~/environment $ 
+user4:~/environment $ 
+user4:~/environment $ kubectl config get-contexts
+CURRENT   NAME                                                        CLUSTER                                 AUTHINFO                                                    NAMESPACE
+          employee-context                                            kubernetes                              employee                                                    office
+*         i-0dad6e99729cccef8@eks-class-cluster.us-east-1.eksctl.io   eks-class-cluster.us-east-1.eksctl.io   i-0dad6e99729cccef8@eks-class-cluster.us-east-1.eksctl.io   
+          kubernetes-admin@kubernetes                                 kubernetes                              kubernetes-admin                                            
+user4:~/environment $
+user4:~/environment $ 
+user4:~/environment $ kubectl config use-context i-0dad6e99729cccef8@eks-class-cluster.us-east-1.eksctl.io
+Switched to context "i-0dad6e99729cccef8@eks-class-cluster.us-east-1.eksctl.io".
+user4:~/environment $ 
+user4:~/environment $ 
+user4:~/environment $ 
+user4:~/environment $ kubectl get nodes
+NAME                             STATUS   ROLES    AGE   VERSION
+ip-192-168-20-50.ec2.internal    Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-51-6.ec2.internal     Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-90-164.ec2.internal   Ready    <none>   16h   v1.23.13-eks-fb459a0
+ip-192-168-94-241.ec2.internal   Ready    <none>   16h   v1.23.13-eks-fb459a0
+
+# change ns directly
+kc create ns jkidd
+kc config set-context --current --namespace=jkid
+kc  get allkc get pods
+kc get nskc get all
+
+# run kc with ns <default namespace for below>
+kc apply -f xx.yaml -ns default
+
+
+kubectl apply -f service.yaml
+kubectl delete -f deployment2.yaml
+
+
+kubectl describe node ip-172-x-x-x
+kc get all
+kc delete deployment nginx-delopyument1
+kc delete <type> <name>
+
+# default system service
+kc delete service kubernetes< should not, this belong to system>
+<it will be recreated later>
+
+
+https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+https://argoproj.github.io/
+
+
+Join master:
+kubeadm join 172.31.10.89:6443 --token 9fb8sa.b5zztm4m1crg9l7a \
+    --discovery-token-ca-cert-hash sha256:6b5ef1e80dbaa9fe7739f1c268839da00a3277ebdf9f9793344ad483013ee7df
+
+To fix worker can not join master:
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+copy the file from master to cloud9 so we can run kubectl from cloud9:
+scp -i user30.pem  ubuntu@3.239.220.170:~/.kube/config /home/ubuntu/.kube/
+
+user4:~/environment/k8s_int/samples (master) $ kubectl apply -f deployment.yaml
+deployment.apps/nginx-deployment1 created
+user4:~/environment/k8s_int/samples (master) $ kubectl apply -f service.yaml
+service/nginx-service created
+user4:~/environment/k8s_int/samples (master) $
+
+user4:~/environment/k8s_int/samples (master) $ kubectl get pods
+NAME                                 READY   STATUS    RESTARTS   AGE
+nginx-deployment1-69fc984dc8-2j9n9   1/1     Running   0          2m31s
+nginx-deployment1-69fc984dc8-96v7q   1/1     Running   0          2m31s
+nginx-deployment1-69fc984dc8-hvhwx   1/1     Running   0          2m31s
+nginx-deployment1-69fc984dc8-qjrsm   1/1     Running   0          2m31s
+nginx-deployment1-69fc984dc8-z227k   1/1     Running   0          2m31s
+
+#LABS:
+DNS
+RBAC
+Secrets
+networking
+01-install-k8s
+02-affinity
+08-service
+08-delopyment
+05-configmap
+06-networking
+
+
+
+user4:~/environment/k8s_int/labs/08-deployments (master) $ kubectl get services
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        127m
+nginx-service   NodePort    10.96.56.231    <none>        80:30080/TCP   33m
+redis-master    ClusterIP   10.96.188.218   <none>        6379/TCP       119s
+redis-slave     ClusterIP   10.96.248.141   <none>        6379/TCP       4s
+
+user4:~/environment/k8s_int/labs/08-deployments (master) $ kubectl get svc
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        125m
+nginx-service   NodePort    10.96.56.231    <none>        80:30080/TCP   31m
+redis-master    ClusterIP   10.96.188.218   <none>        6379/TCP       8s
+
+
+ 
